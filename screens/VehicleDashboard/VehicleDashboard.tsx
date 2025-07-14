@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, Button, View, Text, ActivityIndicator } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import VehicleDashboardUI from './VehicleDashboardUI';
 import { BatteryBluetoothContext } from '../../services/BatteryBluetoothProvider';
 import { BluetoothContext } from '../../services/BluetoothServices';
@@ -9,19 +9,13 @@ const VehicleDashboard = () => {
   const {
     data: batteryData,
     connectedDevice: batteryConnected,
-    connectToFirstAvailableDevice,
-    disconnectDevice,
   } = useContext(BatteryBluetoothContext) || {
     data: {},
     connectedDevice: null,
-    connectToFirstAvailableDevice: async () => {},
-    disconnectDevice: async () => {},
   };
 
   const { connectedDevice: bldcConnected } = useContext(BluetoothContext) || { connectedDevice: null };
   const [time, setTime] = useState(new Date().toLocaleTimeString());
-  const [connectionStatus, setConnectionStatus] = useState<string | null>(null);
-  const [isConnecting, setIsConnecting] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -72,62 +66,8 @@ const VehicleDashboard = () => {
 
   const { color: glowColor, intensity: glowIntensity } = getGlowColor(mcu1.speed);
 
-  // 🔧 Debug handlers
-  const handleConnectUSB = async () => {
-    setIsConnecting(true);
-    setConnectionStatus("Connecting...");
-    console.log("🔌 Trying to connect to first USB device...");
-    try {
-      await connectToFirstAvailableDevice?.();
-      console.log("✅ USB connection attempted");
-      setConnectionStatus("Connected");
-    } catch (error) {
-      console.error("❌ Failed to connect to USB:", error);
-      setConnectionStatus("Connection Failed");
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
-  const handleDisconnectUSB = async () => {
-    setIsConnecting(true);
-    setConnectionStatus("Disconnecting...");
-    console.log("🔌 Disconnecting from USB device...");
-    try {
-      await disconnectDevice?.();
-      console.log("✅ USB disconnected");
-      setConnectionStatus("Disconnected");
-    } catch (error) {
-      console.error("❌ Failed to disconnect USB:", error);
-      setConnectionStatus("Disconnect Failed");
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
   return (
     <SafeAreaView style={styles.fullScreen}>
-      {/* ⚙️ Debug Buttons and Status */}
-      <View style={styles.debugControls}>
-        <View style={styles.debugButtons}>
-          <Button
-            title={isConnecting ? "Connecting..." : "Connect USB"}
-            onPress={handleConnectUSB}
-            disabled={isConnecting}
-          />
-          <Button
-            title={isConnecting ? "Disconnecting..." : "Disconnect USB"}
-            onPress={handleDisconnectUSB}
-            disabled={isConnecting}
-          />
-        </View>
-        {connectionStatus && (
-          <View style={styles.status}>
-            <Text style={styles.statusText}>{connectionStatus}</Text>
-          </View>
-        )}
-      </View>
-
       <VehicleDashboardUI
         speed={mcu1.speed}
         time={time}
@@ -164,27 +104,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: '#fff',
-  },
-  debugControls: {
-    position: 'absolute',
-    top: 12,
-    left: 12,
-    zIndex: 999,
-    flexDirection: 'column',
-    gap: 4,
-  },
-  debugButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  status: {
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    padding: 4,
-    borderRadius: 4,
-  },
-  statusText: {
-    color: '#fff',
-    fontSize: 14,
   },
 });
 

@@ -1,11 +1,10 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   ActivityIndicator,
   StatusBar,
   Platform,
 } from "react-native";
-import { BatteryBluetoothContext } from "./services/BatteryBluetoothProvider";
 import {
   NavigationContainer,
   useNavigationContainerRef,
@@ -32,7 +31,7 @@ import MotorHealth from "./screens/MotorHealth/MotorHealth";
 import Youtube from "./screens/Youtube/Youtube";
 import Map from "./screens/MapsScreen/Map";
 import ExportDataScreen from "./screens/ExportData/ ExportDataScreen";
-import { RNSerialport } from '@fugood/react-native-usb-serialport'; // ✅ Added import
+
 // Providers
 import { BluetoothProvider } from "./services/BluetoothServices";
 import { BatteryBluetoothProvider } from "./services/BatteryBluetoothProvider";
@@ -44,7 +43,6 @@ import Toast from "react-native-toast-message";
 
 import { enableScreens } from 'react-native-screens';
 enableScreens();
-
 // Stack type
 export type RootStackParamList = {
   Login: undefined;
@@ -69,51 +67,17 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const App = () => {
   const navigationRef = useNavigationContainerRef<RootStackParamList>();
-  const [loading, setLoading] = useState(true);
-  const [usbServiceReady, setUsbServiceReady] = useState(false);
-  const batteryContext = useContext(BatteryBluetoothContext);
+  const [loading, setLoading] = useState(false);
 
-  // Initialize USB service and auto-connect
+  // ✅ Immersive full screen mode for Android
   useEffect(() => {
-    if (Platform.OS === "android") {
-      console.log("🚀 Starting USB service...");
-      try {
-        // Start USB service
-        ImmersiveMode.fullLayout(true);
-        ImmersiveMode.setBarMode("FullSticky");
-        // @ts-ignore – enterImmersive is a runtime method not declared in types
-        ImmersiveMode.enterImmersive?.();
-        // Initialize USB service
-        RNSerialport.startUsbService();
-        console.log("✅ USB service started");
-        setUsbServiceReady(true);
-      } catch (error) {
-        console.error("❌ Failed to start USB service:", error);
-      }
-    } else {
-      setUsbServiceReady(true); // No USB service needed on iOS
-    }
-
-    // Auto-connect after service is ready
-    if (usbServiceReady && batteryContext?.connectToFirstAvailableDevice) {
-      console.log("🚀 Auto-connecting to USB device...");
-      batteryContext.connectToFirstAvailableDevice();
-    }
-
-    // Cleanup on unmount
-    return () => {
-      if (Platform.OS === "android") {
-        RNSerialport.stopUsbService();
-      }
-    };
-  }, [usbServiceReady, batteryContext]);
-
-  // Set loading to false after initialization
-  useEffect(() => {
-    if (usbServiceReady) {
-      setLoading(false);
-    }
-  }, [usbServiceReady]);
+  if (Platform.OS === "android") {
+    ImmersiveMode.fullLayout(true);
+    ImmersiveMode.setBarMode("FullSticky");
+    // @ts-ignore – enterImmersive is a runtime method not declared in types
+    ImmersiveMode.enterImmersive?.();
+  }
+}, []);
 
   if (loading) {
     return (
@@ -134,43 +98,43 @@ const App = () => {
 
       <SafeAreaProvider>
         <LocationProvider>
-          <BluetoothProvider>
-            <BatteryBluetoothProvider>
-              <BluetoothPopupProvider>
-                <NavigationContainer ref={navigationRef}>
-                  <Stack.Navigator
-                    screenOptions={{
-                      headerShown: false,
-                      gestureEnabled: true,
-                      animation: 'slide_from_right',
-                      animationDuration: 300,
-                      contentStyle: { backgroundColor: '#000' },
-                    }}
-                  >
-                    <Stack.Screen name="Home" component={HomeScreen} />
-                    <Stack.Screen name="Dashboard" component={DashboardScreen} />
-                    <Stack.Screen name="Subscription" component={Subscription} />
-                    <Stack.Screen name="PaymentScreen" component={PaymentScreen} />
-                    <Stack.Screen name="History" component={HistoryScreen} />
-                    <Stack.Screen name="UserProfile" component={UserProfile} />
-                    <Stack.Screen name="BatteryHealth" component={BatteryHealth} />
-                    <Stack.Screen name="MenuScreen" component={MenuScreen} />
-                    <Stack.Screen name="MotorHealth" component={MotorHealth} />
-                    <Stack.Screen name="Youtube" component={Youtube} />
-                    <Stack.Screen name="Map" component={Map} />
-                    <Stack.Screen name="ExportDataScreen" component={ExportDataScreen} />
-                    <Stack.Screen name="Login" component={LoginScreen} />
-                    <Stack.Screen name="Signup" component={SignupScreen} />
-                    <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-                    <Stack.Screen name="VerifyEmail" component={VerifyEmailScreen} />
-                  </Stack.Navigator>
-                </NavigationContainer>
+        <BluetoothProvider>
+          <BatteryBluetoothProvider>
+            <BluetoothPopupProvider>
+              <NavigationContainer ref={navigationRef}>
+                <Stack.Navigator
+                  screenOptions={{
+                    headerShown: false,
+                    gestureEnabled: true,
+                    animation: 'slide_from_right',
+                    animationDuration: 300,
+                    contentStyle: { backgroundColor: '#000' }, // ✅ ADD THIS
+                  }}
+                >
+                  <Stack.Screen name="Home" component={HomeScreen} />
+                  <Stack.Screen name="Dashboard" component={DashboardScreen} />
+                  <Stack.Screen name="Subscription" component={Subscription} />
+                  <Stack.Screen name="PaymentScreen" component={PaymentScreen} />
+                  <Stack.Screen name="History" component={HistoryScreen} />
+                  <Stack.Screen name="UserProfile" component={UserProfile} />
+                  <Stack.Screen name="BatteryHealth" component={BatteryHealth} />
+                  <Stack.Screen name="MenuScreen" component={MenuScreen} />
+                  <Stack.Screen name="MotorHealth" component={MotorHealth} />
+                  <Stack.Screen name="Youtube" component={Youtube} />
+                  <Stack.Screen name="Map" component={Map} />
+                  <Stack.Screen name="ExportDataScreen" component={ExportDataScreen} />
+                  <Stack.Screen name="Login" component={LoginScreen} />
+                  <Stack.Screen name="Signup" component={SignupScreen} />
+                  <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+                  <Stack.Screen name="VerifyEmail" component={VerifyEmailScreen} />
+                </Stack.Navigator>
+              </NavigationContainer>
 
-                <BluetoothPopup />
-                <Toast />
-              </BluetoothPopupProvider>
-            </BatteryBluetoothProvider>
-          </BluetoothProvider>
+              <BluetoothPopup />
+              <Toast />
+            </BluetoothPopupProvider>
+          </BatteryBluetoothProvider>
+        </BluetoothProvider>
         </LocationProvider>
       </SafeAreaProvider>
     </>
